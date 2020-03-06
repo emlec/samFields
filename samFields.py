@@ -55,14 +55,16 @@ class Histogram(object):
         parser.add_argument('-l', '--list', nargs='+', dest='bam', help='List of BAM file(s)', required=True)
         parser.add_argument('-s', '--sam_field', nargs='+', dest='sam_field',
                             help='List of MAPQ, AS or NM SAM/BAM field(s)', required=True)
+        parser.add_argument('-o', '--output', dest='output',
+                            help='Output name', required=True)
         parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.0.1')
         # Parse arguments
         args = vars(parser.parse_args())
-        return Histogram(args["bam"], args["sam_field"])
+        return Histogram(args["bam"], args["sam_field"], args["output"])
 
     # ~~~~~~~FONDAMENTAL METHODS~~~~~~~#
 
-    def __init__(self, list_bam_path, list_bam_field):
+    def __init__(self, list_bam_path, list_bam_field, output_name):
         """
         Initialization of the attributes of the class
         list_bam is a list containing the path(s) of the bam file(s) to be analyzed
@@ -75,6 +77,8 @@ class Histogram(object):
                 print("Only MAPQ, AS, NM SAM/BAM fields are accepted.")
                 exit()
         self.list_bam_field = list_bam_field
+        self.output_name = output_name
+
 
 
     def bam_extract_file_name(self):
@@ -142,7 +146,7 @@ class Histogram(object):
         plt.xlabel(xlabel)
         plt.ylabel('Number of aligned reads')
         plt.legend()
-        plt.savefig(xlabel + ".png")
+        plt.savefig(self.output_name + ".png")
 
 
     def make_graph(self):
