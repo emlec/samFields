@@ -1,15 +1,15 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
-@brief      Creation of histogram(s) representing the number of reads depending of MAPQ, AS, or NM SAM field.
+@package    samField
+@brief      Creation of histogram(s) representing the number of reads depending of MAPQ, AS, or NM SAM fields.
 @copyright  [GNU General Public License v3]
 @author     Emilie Lecomte - 2020
 * <emilie.lecomte@univ-nantes.fr>
 * [Github](https://github.com/emlec)
 * [INSERM 1089] (http://umr1089.univ-nantes.fr/)
-"""
 
-"""
 Additional information referring to SAM/BAM files and pysam library:
 QNAME (column 1 of sam/bam file): read.query_name
 The name of the reference: read.reference_name
@@ -23,12 +23,12 @@ NM: Edit distance to the reference - COLUMN 7 (0-based): read.get_tag(tag="NM")
 """
 
 # ~~~~~~~ IMPORTS ~~~~~~~#
+
 try:
     # Standard library imports
     import argparse
     from pathlib import Path
     import pysam
-    import numpy as np
     import matplotlib.pyplot as plt
 
 except ImportError as E:
@@ -68,88 +68,99 @@ class Histogram(object):
         list_bam is a list containing the path(s) of the bam file(s) to be analyzed
         list_field is a list containing the field(s) to be analyzed, e.g. AS, MAPQ, ...
         """
-
+        supported_fields = ['MAPQ', 'AS', 'NM']
         self.list_bam_path = list_bam_path
-        self.list_bam_field = list_bam_field
+        for bam_field in list_bam_field:
+            if bam_field not in supported_fields:
+                print("Only MAPQ, AS, NM SAM/BAM fields are accepted.")
+                exit()
+            else:
+                self.list_bam_field = list_bam_field
 
-    def bam_extract_file_name(self):
-        """
-        Extract the name of BAM file(s) from the bam path.
-        Input: List of BAM file paths
-        Output: List of the BAM file name
-        """
-        list_bam_name = []
-        for bam in self.list_bam_path:
-            list_bam_name.append(Path(bam).stem)
-        return list_bam_name
 
-    def extract_AS(self, score):
-        """
-        Return the score variable as a list containing each list_read_score of BAM files
-        """
-        for bam in self.list_bam_path:
-            list_read_score = []
-            with pysam.AlignmentFile(bam, "rb") as b:
-                for read in b:
-                    list_read_score.append(read.get_tag(tag="AS"))
-            score.append(list_read_score)
-        return score
+def bam_extract_file_name(self):
+    """
+    Extract the name of BAM file(s) from the bam path.
+    Input: List of BAM file paths
+    Output: List of the BAM file name
+    """
+    list_bam_name = []
+    for bam in self.list_bam_path:
+        list_bam_name.append(Path(bam).stem)
+    return list_bam_name
 
-    def extract_MAPQ(self, score):
-        """
-        Return the score variable as a list containing each list_read_score of BAM files
-        """
-        for bam in self.list_bam_path:
-            list_read_score = []
-            with pysam.AlignmentFile(bam, "rb") as b:
-                for read in b:
-                    list_read_score.append(read.mapping_quality)
-            score.append(list_read_score)
-        return score
 
-    def extract_NM(self, score):
-        """
-        Return the score variable as a list containing each list_read_score of BAM files
-        """
-        for bam in self.list_bam_path:
-            list_read_score = []
-            with pysam.AlignmentFile(bam, "rb") as b:
-                for read in b:
-                    list_read_score.append(read.get_tag(tag="NM"))
-            score.append(list_read_score)
-        return score
+def extract_AS(self, score):
+    """
+    Return the score variable as a list containing each list_read_score of BAM files
+    """
+    for bam in self.list_bam_path:
+        list_read_score = []
+        with pysam.AlignmentFile(bam, "rb") as b:
+            for read in b:
+                list_read_score.append(read.get_tag(tag="AS"))
+        score.append(list_read_score)
+    return score
 
-    def def_graph(self, score, xlabel):
-        """
-        Determination of the histogram parameters
-        """
-        fig, ax = plt.subplots()
-        bam_name = self.bam_extract_file_name()
-        count_bam_name = 0
-        for bam_score in score:
-            ax.hist(bam_score, bins=10, label=bam_name[count_bam_name], histtype='bar', alpha=0.7)
-            count_bam_name += 1
-        plt.title('Histogram')
-        plt.xlabel(xlabel)
-        plt.ylabel('Number of aligned reads')
-        plt.legend()
-        plt.savefig(xlabel + ".png")
 
-    def make_graph(self):
-        """
-        # Generate the histogram, one per field, with all the bam together
-        """
-        # For every field, e.g. "AS", "MAPQ", ...
-        for field in self.list_bam_field:
-            print('Generation of the histogram representing the {} field.'.format(field))
-            # For every bam files
-            score = []
-            if field == 'AS':
-                self.def_graph(self.extract_AS(score), 'Alignment_Score')
-            elif field == 'MAPQ':
-                self.def_graph(self.extract_MAPQ(score), 'Mapping_Quality')
-            elif field == 'NM':
-                self.def_graph(self.extract_NM(score), 'Distance_to_the_reference')
+def extract_MAPQ(self, score):
+    """
+    Return the score variable as a list containing each list_read_score of BAM files
+    """
+    for bam in self.list_bam_path:
+        list_read_score = []
+        with pysam.AlignmentFile(bam, "rb") as b:
+            for read in b:
+                list_read_score.append(read.mapping_quality)
+        score.append(list_read_score)
+    return score
+
+
+def extract_NM(self, score):
+    """
+    Return the score variable as a list containing each list_read_score of BAM files
+    """
+    for bam in self.list_bam_path:
+        list_read_score = []
+        with pysam.AlignmentFile(bam, "rb") as b:
+            for read in b:
+                list_read_score.append(read.get_tag(tag="NM"))
+        score.append(list_read_score)
+    return score
+
+
+def def_graph(self, score, xlabel):
+    """
+    Determination of the histogram parameters
+    """
+    fig, ax = plt.subplots()
+    bam_name = self.bam_extract_file_name()
+    count_bam_name = 0
+    for bam_score in score:
+        ax.hist(bam_score, bins=10, label=bam_name[count_bam_name], histtype='bar', alpha=0.7)
+        count_bam_name += 1
+    plt.title('Histogram')
+    plt.xlabel(xlabel)
+    plt.ylabel('Number of aligned reads')
+    plt.legend()
+    plt.savefig(xlabel + ".png")
+
+
+def make_graph(self):
+    """
+    # Generate the histogram, one per field, with all the bam together
+    """
+    # For every field, e.g. "AS", "MAPQ", ...
+    for field in self.list_bam_field:
+        print('Generation of the histogram representing the {} field.'.format(field))
+        # For every bam files
+        score = []
+        if field == 'AS':
+            self.def_graph(self.extract_AS(score), 'Alignment_Score')
+        elif field == 'MAPQ':
+            self.def_graph(self.extract_MAPQ(score), 'Mapping_Quality')
+        elif field == 'NM':
+            self.def_graph(self.extract_NM(score), 'Distance_to_the_reference')
 
 
 # ~~~~~~~TOP LEVEL INSTRUCTIONS~~~~~~~#
