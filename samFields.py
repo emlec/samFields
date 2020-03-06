@@ -56,7 +56,7 @@ class Histogram(object):
         parser.add_argument('-s', '--sam_field', nargs='+', dest='sam_field',
                             help='List of MAPQ, AS or NM SAM/BAM field(s)', required=True)
         parser.add_argument('-o', '--output', dest='output',
-                            help='Output name', required=True)
+                            help='Output name. Identification of the bam files used.', required=True)
         parser.add_argument('-v', '--version', action='version', version='%(prog)s 0.0.1')
         # Parse arguments
         args = vars(parser.parse_args())
@@ -132,7 +132,7 @@ class Histogram(object):
         return score
 
 
-    def def_graph(self, score, xlabel):
+    def def_graph(self, score, xlabel, field):
         """
         Determination of the histogram parameters
         """
@@ -146,7 +146,7 @@ class Histogram(object):
         plt.xlabel(xlabel)
         plt.ylabel('Number of aligned reads')
         plt.legend()
-        plt.savefig(self.output_name + ".png")
+        plt.savefig(self.output_name + "_" + field + ".png")
 
 
     def make_graph(self):
@@ -159,11 +159,11 @@ class Histogram(object):
             # For every bam files
             score = []
             if field == 'AS':
-                self.def_graph(self.extract_AS(score), 'Alignment_Score')
+                self.def_graph(self.extract_AS(score), 'Alignment_Score', field)
             elif field == 'MAPQ':
-                self.def_graph(self.extract_MAPQ(score), 'Mapping_Quality')
+                self.def_graph(self.extract_MAPQ(score), 'Mapping_Quality', field)
             elif field == 'NM':
-                self.def_graph(self.extract_NM(score), 'Distance_to_the_reference')
+                self.def_graph(self.extract_NM(score), 'Distance_to_the_reference', field)
 
 
 # ~~~~~~~TOP LEVEL INSTRUCTIONS~~~~~~~#
